@@ -21,7 +21,9 @@ public protocol PersistentImageCache: ImageRequestCache {
     
     func remainingLifeForImage(withIdentifier identifier: String) -> TimeInterval?
     func remainingLifeForImage(for request: URLRequest, withIdentifier identifier: String) -> TimeInterval?
-
+  
+    func lastModifiedDate(for request: URLRequest, withIdentifier identifier: String?) -> Date?
+  
     func add(_ image: Image, withIdentifier identifier: String, andTimeToLive timeToLive: TimeInterval)
     func add(_ image: Image, withIdentifier identifier: String, andTimeToLive timeToLive: TimeInterval, withCompletion completion: @escaping ()->())
     
@@ -388,7 +390,15 @@ open class PersistentAutoPurgingImageCache: AutoPurgingImageCache, PersistentIma
         
         return expiration - NSDate().timeIntervalSince1970
     }
-    
+  
+    public func lastModifiedDate(for request: URLRequest, withIdentifier identifier: String?) -> Date? {
+      let requestIdentifier = imageCacheKey(for: request, withIdentifier: identifier)
+      let path = self.pathForResource(withIdentifier: requestIdentifier)
+      guard fileManager.fileExists(atPath: path) else { return nil }
+      return (try? fileManager.attributesOfItem(atPath: path))?[FileAttributeKey.modificationDate] as? Date
+    }
+
+  
     ///Clean the cache folder by deleting files with remaining life < 0. All memory instance of the removed image will be removed too from cache.
     ///
     ///- returns: True if at least one file was deleted from disk.
