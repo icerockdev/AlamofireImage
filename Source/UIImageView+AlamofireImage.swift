@@ -304,10 +304,9 @@ extension UIImageView {
                 default:
                     break
             }
+        } else if let placeholderImage = placeholderImage {
+          self.image = placeholderImage          
         }
-
-        // Set the placeholder since we're going to have to download
-        if let placeholderImage = placeholderImage { self.image = placeholderImage }
 
         // Generate a unique download id to check whether the active request has changed while downloading
         let downloadID = UUID().uuidString
