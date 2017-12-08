@@ -280,9 +280,6 @@ extension UIImageView {
         // Use the image from the image cache if it exists
         if
             let request = urlRequest.urlRequest,
-            request.cachePolicy == URLRequest.CachePolicy.useProtocolCachePolicy ||
-            request.cachePolicy == URLRequest.CachePolicy.returnCacheDataDontLoad ||
-            request.cachePolicy == URLRequest.CachePolicy.returnCacheDataElseLoad,
             let image = imageCache?.image(for: request, withIdentifier: filter?.identifier)
         {
             let response = DataResponse<UIImage>(request: request, response: nil, data: nil, result: .success(image))
@@ -299,8 +296,14 @@ extension UIImageView {
                 self.image = image
                 completion?(response)
             }
-
-            return
+            switch request.cachePolicy {
+                case .returnCacheDataDontLoad,
+                     .returnCacheDataElseLoad,
+                     .useProtocolCachePolicy:
+                    return
+                default:
+                    break
+            }
         }
 
         // Set the placeholder since we're going to have to download
